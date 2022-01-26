@@ -1,7 +1,6 @@
 from functions import cls, checkfile, time_text
-import discord
-import asyncio
 from discord.ext import commands, tasks
+from datetime import datetime
 import time
 import json
 
@@ -25,10 +24,28 @@ async def on_ready():
     await channel.send("Hello world!")
 
 
+@client.event
+async def on_disconnect():
+    print('Connection failed... retrying.')
+    await client.run(token)
+
+
 @client.command()
 async def tick(ctx):
     channel = client.get_channel(channel_id)
     await channel.send("Current tick {t}".format(t=client.tick))
+
+
+@client.command()
+async def start(ctx, action):
+    channel = client.get_channel(channel_id)
+    await channel.send('{}, {} started.'.format(ctx.author.name, action))
+
+
+@client.command()
+async def kill(ctx):
+    ticker.stop()
+    await client.close()
 
 
 @tasks.loop(seconds=1)
@@ -36,8 +53,10 @@ async def ticker():
     await client.wait_until_ready()
     client.seconds += 1
     cls()
+    now = datetime.now()
     if client.seconds % 6 == 0:
         client.tick += 1
+    print('Current Time: {}'.format(now))
     print('Time elapsed: ' + time_text(client.seconds))
     print('Current Tick: {}'.format(client.tick))
 
