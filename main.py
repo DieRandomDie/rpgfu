@@ -1,4 +1,4 @@
-from os import path
+from functions import cls, checkfile, time_text
 import discord
 import asyncio
 from discord.ext import commands, tasks
@@ -8,8 +8,9 @@ import json
 
 client = commands.Bot(command_prefix='!')
 client.tick = 0
+client.seconds = 0
 channel_id = 934490823100366868
-if not path.exists("token.dat"):
+if not checkfile("token.dat"):
     with open('token.dat', 'w') as token_data:
         token_data.write(input("Bot token: "))
 with open('token.dat') as token_data:
@@ -21,11 +22,6 @@ with open('token.dat') as token_data:
 @client.event
 async def on_ready():
     channel = client.get_channel(channel_id)
-    print(channel)
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
     await channel.send("Hello world!")
 
 
@@ -35,10 +31,15 @@ async def tick(ctx):
     await channel.send("Current tick {t}".format(t=client.tick))
 
 
-@tasks.loop(seconds=6)
+@tasks.loop(seconds=1)
 async def ticker():
     await client.wait_until_ready()
-    client.tick += 1
+    client.seconds += 1
+    cls()
+    if client.seconds % 6 == 0:
+        client.tick += 1
+    print('Time elapsed: ' + time_text(client.seconds))
+    print('Current Tick: {}'.format(client.tick))
 
 
 ticker.start()
